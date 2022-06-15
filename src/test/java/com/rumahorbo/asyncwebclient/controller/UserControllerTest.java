@@ -1,5 +1,6 @@
 package com.rumahorbo.asyncwebclient.controller;
 
+import com.rumahorbo.asyncwebclient.factory.Factory;
 import com.rumahorbo.asyncwebclient.model.Quote;
 import com.rumahorbo.asyncwebclient.service.RestService;
 import com.rumahorbo.asyncwebclient.service.UserService;
@@ -9,6 +10,7 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
@@ -20,6 +22,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @ExtendWith(SpringExtension.class)
 @WebFluxTest(controllers = UserController.class)
 @Import(UserService.class)
+@ComponentScan("com.rumahorbo.asyncwebclient.factory")
 class UserControllerTest {
 
     @Autowired
@@ -28,6 +31,9 @@ class UserControllerTest {
     @MockBean
     private RestService restService;
 
+    @Autowired
+    private Factory factory;
+
     @Test
     void getUserTaskByTodoId() {
 
@@ -35,11 +41,7 @@ class UserControllerTest {
 
     @Test
     void getRandomQuote() {
-        Quote quote = Quote.builder()
-                .id(1)
-                .author("cris")
-                .quote("yaudalah")
-                .build();
+        Quote quote = factory.constructQuote();
         Mockito.when(this.restService.get("/quotes/random", Quote.class)).thenReturn(Mono.just(quote));
         this.testClient
                 .get()
