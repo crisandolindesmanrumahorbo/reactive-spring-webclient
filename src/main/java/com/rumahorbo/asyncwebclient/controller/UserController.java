@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
 @RestController
-@RequestMapping("/web-client")
+@RequestMapping(value = "/web-client", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 @AllArgsConstructor
 public class UserController {
 
@@ -29,12 +29,12 @@ public class UserController {
         return userService.getUserQuoteByUserId(userId);
     }
 
-    @PostMapping(value = "/async/todos", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/async/todos")
     public Mono<Todo> createTodo(@RequestBody Todo todo) {
         return userService.createTodo(todo);
     }
 
-    @PostMapping(value = "/async/comments", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/async/comments")
     public Mono<CommentDTO> createComment(@RequestBody CommentDTO commentDTO) {
         return userService.createComment(commentDTO);
     }
