@@ -1,9 +1,9 @@
 package com.rumahorbo.asyncwebclient.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rumahorbo.asyncwebclient.factory.Factory;
-import com.rumahorbo.asyncwebclient.model.Quote;
-import com.rumahorbo.asyncwebclient.model.Todo;
-import com.rumahorbo.asyncwebclient.model.User;
+import com.rumahorbo.asyncwebclient.model.*;
 import com.rumahorbo.asyncwebclient.service.RestService;
 import com.rumahorbo.asyncwebclient.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,6 +36,9 @@ class UserControllerTest {
 
     @Autowired
     private Factory factory;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @BeforeEach
     public void init() {
@@ -105,9 +108,49 @@ class UserControllerTest {
 
     @Test
     void createTodo() {
+        String todoBody = "Steal someone heart,I mean literally heart";
+        int userId = 1;
+        Todo todo = factory.constructTodo(todoBody, userId);
+        Mockito.when(this.restService.post(Mockito.any(String.class), Mockito.any(Todo.class), Mockito.eq(Todo.class))).thenReturn(Mono.just(todo));
+
+        this.testClient
+                .post()
+                .uri("/web-client/async/todos")
+                .bodyValue(todo)
+                .header(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+                .exchange()
+                .expectStatus()
+                .is2xxSuccessful()
+                .expectBody(Todo.class)
+                .isEqualTo(todo);
     }
 
     @Test
-    void createComment() {
+    void createComment() throws JsonProcessingException {
+        String username = "cris";
+        String postTitle = "Microservice Getting Start";
+        String commentBody = "Monolith > Microservice";
+        int userId = 1;
+        int postId = 1;
+        CommentDTO commentDTO = factory.constructCommentDTO(username, postTitle, commentBody);
+        User user = factory.constructUser(username);
+        Post post = factory.constructPost(userId, postTitle);
+        Comment comment = factory.constructComment(userId, postId, commentBody, user);
+        String expected = objectMapper.writeValueAsString(commentDTO);
+        Mockito.when(this.restService.post(Mockito.any(String.class), Mockito.any(User.class), Mockito.eq(User.class))).thenReturn(Mono.just(user));
+        Mockito.when(this.restService.post(Mockito.any(String.class), Mockito.any(Post.class), Mockito.eq(Post.class))).thenReturn(Mono.just(post));
+        Mockito.when(this.restService.post(Mockito.any(String.class), Mockito.any(Comment.class), Mockito.eq(Comment.class))).thenReturn(Mono.just(comment));
+
+        this.testClient
+                .post()
+                .uri("/web-client/async/comments")
+                .body(Mono.just(commentDTO), CommentDTO.class)
+                .header(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+                .exchange()
+                .expectStatus()
+                .is2xxSuccessful()
+                .expectBody()
+                .json(expected)
+                .jsonPath("commentBody").isEqualTo(commentBody);
     }
 }

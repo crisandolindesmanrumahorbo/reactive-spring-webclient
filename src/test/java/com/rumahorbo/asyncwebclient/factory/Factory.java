@@ -1,9 +1,6 @@
 package com.rumahorbo.asyncwebclient.factory;
 
-import com.rumahorbo.asyncwebclient.model.Quote;
-import com.rumahorbo.asyncwebclient.model.User;
-import com.rumahorbo.asyncwebclient.model.UserTask;
-import com.rumahorbo.asyncwebclient.model.Todo;
+import com.rumahorbo.asyncwebclient.model.*;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -27,6 +24,30 @@ public class Factory {
         return Todo.builder()
                 .todo(todo)
                 .userId(userId)
+                .build();
+    }
+
+    public Post constructPost(int userId, String title) {
+        return Post.builder()
+                .userId(userId)
+                .title(title)
+                .build();
+    }
+
+    public Comment constructComment(int userId, int postId, String body, User user) {
+        return Comment.builder()
+                .userId(userId)
+                .postId(postId)
+                .body(body)
+                .user(user)
+                .build();
+    }
+
+    public CommentDTO constructCommentDTO(String username, String postTitle, String commentBody) {
+        return CommentDTO.builder()
+                .username(username)
+                .postTitle(postTitle)
+                .commentBody(commentBody)
                 .build();
     }
 }
