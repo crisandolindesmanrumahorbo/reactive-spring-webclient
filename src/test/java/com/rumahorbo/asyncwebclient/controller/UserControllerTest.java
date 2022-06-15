@@ -2,6 +2,8 @@ package com.rumahorbo.asyncwebclient.controller;
 
 import com.rumahorbo.asyncwebclient.factory.Factory;
 import com.rumahorbo.asyncwebclient.model.Quote;
+import com.rumahorbo.asyncwebclient.model.Todo;
+import com.rumahorbo.asyncwebclient.model.User;
 import com.rumahorbo.asyncwebclient.service.RestService;
 import com.rumahorbo.asyncwebclient.service.UserService;
 import org.junit.jupiter.api.Test;
@@ -36,13 +38,32 @@ class UserControllerTest {
 
     @Test
     void getUserTaskByTodoId() {
+        String username = "cris";
+        String todoBody = "wash someone brain";
+        int userId = 1;
+        User user = factory.constructUser(username);
+        Todo todo = factory.constructTodo(todoBody, userId);
+        Mockito.when(this.restService.get("/todos/1", Todo.class)).thenReturn(Mono.just(todo));
+        Mockito.when(this.restService.get("/users/1", User.class)).thenReturn(Mono.just(user));
 
+        this.testClient
+                .get()
+                .uri("/web-client/sync/user-tasks/1")
+                .header(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+                .exchange()
+                .expectStatus()
+                .is2xxSuccessful()
+                .expectBody()
+                .jsonPath("username").isEqualTo(username)
+                .jsonPath("todo").isEqualTo(todoBody);
     }
 
     @Test
     void getRandomQuote() {
-        Quote quote = factory.constructQuote();
+        String quoteBody = "yaudalah";
+        Quote quote = factory.constructQuote(quoteBody);
         Mockito.when(this.restService.get("/quotes/random", Quote.class)).thenReturn(Mono.just(quote));
+
         this.testClient
                 .get()
                 .uri("/web-client/async/quotes/random")
@@ -51,9 +72,7 @@ class UserControllerTest {
                 .expectStatus()
                 .is2xxSuccessful()
                 .expectBody()
-                .jsonPath("id").isEqualTo(1)
-                .jsonPath("author").isEqualTo("cris")
-                .jsonPath("quote").isEqualTo("yaudalah");
+                .jsonPath("quote").isEqualTo(quoteBody);
 
     }
 
