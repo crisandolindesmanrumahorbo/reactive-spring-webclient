@@ -6,6 +6,7 @@ import com.rumahorbo.asyncwebclient.model.Todo;
 import com.rumahorbo.asyncwebclient.model.User;
 import com.rumahorbo.asyncwebclient.service.RestService;
 import com.rumahorbo.asyncwebclient.service.UserService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
@@ -35,6 +36,11 @@ class UserControllerTest {
 
     @Autowired
     private Factory factory;
+
+    @BeforeEach
+    public void init() {
+        Mockito.reset(restService);
+    }
 
     @Test
     void getUserTaskByTodoId() {
@@ -78,6 +84,23 @@ class UserControllerTest {
 
     @Test
     void getUserQuoteByUserId() {
+        String username = "cris";
+        String quoteBody = "yaudalah";
+        User user = factory.constructUser(username);
+        Quote quote = factory.constructQuote(quoteBody);
+        Mockito.when(this.restService.get("/users/1", User.class)).thenReturn(Mono.just(user));
+        Mockito.when(this.restService.get("/quotes/random", Quote.class)).thenReturn(Mono.just(quote));
+
+        this.testClient
+                .get()
+                .uri("/web-client/async/user-quotes/1")
+                .header(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+                .exchange()
+                .expectStatus()
+                .is2xxSuccessful()
+                .expectBody()
+                .jsonPath("username").isEqualTo(username)
+                .jsonPath("quote").isEqualTo(quoteBody);
     }
 
     @Test
