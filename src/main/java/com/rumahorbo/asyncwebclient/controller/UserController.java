@@ -3,14 +3,19 @@ package com.rumahorbo.asyncwebclient.controller;
 import com.rumahorbo.asyncwebclient.model.*;
 import com.rumahorbo.asyncwebclient.service.UserService;
 import lombok.AllArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping(value = "/web-client", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 @AllArgsConstructor
 public class UserController {
+
+    private final Logger logger = LoggerFactory.getLogger(UserController.class);
 
     private final UserService userService;
 
@@ -24,9 +29,11 @@ public class UserController {
         return userService.getRandomQuote();
     }
 
-    @GetMapping("/async/user-quotes/{userId}")
+    @GetMapping(value = "/async/user-quotes/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public Mono<UserQuote> getUserQuoteByUserId(@PathVariable String userId) {
-        return userService.getUserQuoteByUserId(userId);
+        Mono<UserQuote> userQuoteByUserId = userService.getUserQuoteByUserId(userId);
+        logger.info("from cont");
+        return userQuoteByUserId;
     }
 
     @PostMapping(value = "/async/todos")
@@ -36,6 +43,25 @@ public class UserController {
 
     @PostMapping(value = "/async/comments")
     public Mono<CommentDTO> createComment(@RequestBody CommentDTO commentDTO) {
-        return userService.createComment(commentDTO);
+        Mono<CommentDTO> comment = userService.createComment(commentDTO);
+        logger.info("from cont");
+        return comment;
+    }
+
+    @GetMapping(value = "/async/ok")
+    public Mono<String> getOk() {
+        return WebClient.create("http://localhost:8083")
+                .get()
+                .retrieve()
+                .bodyToMono(String.class);
+    }
+
+    @GetMapping(value = "/sync/ok")
+    public String getOkSync() {
+        return WebClient.create("http://localhost:8083")
+                .get()
+                .retrieve()
+                .bodyToMono(String.class)
+                .block();
     }
 }
